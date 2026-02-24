@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IL-22 检测成本对比计算器 | R&D vs Ella</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .result-section {
+            padding: 30px;
+            background: white;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title .icon {
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-group .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        input[readonly] {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        .method-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .method-card.active {
+            border-color: #3498db;
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.15);
+        }
+
+        .method-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .method-card .method-badge {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .result-card h3 {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .result-card .value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .result-card .unit {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight {
+            background: #e8f4fd !important;
+            font-weight: 600;
+        }
+
+        .best-value {
+            color: #27ae60;
+            font-weight: 700;
+        }
+
+        .bar-chart {
+            margin: 20px 0;
+        }
+
+        .bar-item {
+            margin-bottom: 15px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .bar-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            transition: width 0.5s ease;
+        }
+
+        .bar-rd {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+        }
+
+        .bar-ella {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #555;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .savings-badge {
+            background: #27ae60;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .print-btn:hover {
+            transform: scale(1.1);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .print-btn {
+                display: none;
+            }
+            .input-section {
+                display: none;
+            }
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 IL-22 检测成本对比计算器</h1>
+            <p>R&D Systems DuoSet ELISA vs ProteinSimple Ella Cartridge | 不含仪器折旧</p>
+        </div>
+
+        <div class="calculator-grid">
+            <!-- 输入区域 -->
+            <div class="input-section">
+                <h2 class="section-title">
+                    <span class="icon">⚙️</span>
+                    参数设置
+                </h2>
+
+                <!-- 人工成本 -->
+                <div class="method-card active">
+                    <h3>💰 人工成本 <span class="method-badge">基础参数</span></h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>月薪 (HKD)</label>
+                            <input type="number" id="monthlySalary" value="22000" onchange="calculate()">
+                            <div class="hint">技术人员月薪</div>
+                        </div>
+                        <div class="input-group">
+                            <label>每月工作天数</label>
+                            <input type="number" id="workDaysPerMonth" value="22" onchange="calculate()">
+                            <div class="hint">通常22天</div>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>每日工作小时</label>
+                            <input type="number" id="hoursPerDay" value="8" onchange="calculate()">
+                            <div class="hint">标准8小时</div>
+                        </div>
+                        <div class="input-group">
+                            <label>时薪 (HKD)</label>
+                            <input type="number" id="hourlyRate" value="125" readonly>
+                            <div class="hint">自动计算</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- R&D 参数 -->
+                <div class="method-card">
+                    <h3>🔬 R&D DuoSet ELISA <span class="method-badge">传统方法</span></h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>试剂盒价格 (HKD)</label>
+                            <input type="number" id="rdKitPrice" value="5400" onchange="calculate()">
+                            <div class="hint">5板装总价</div>
+                        </div>
+                        <div class="input-group">
+                            <label>试剂盒板数</label>
+                            <input type="number" id="rdKitPlates" value="5" onchange="calculate()">
+                            <div class="hint">通常5板</div>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>每板孔数</label>
+                            <input type="number" id="rdWellsPerPlate" value="96" onchange="calculate()">
+                            <div class="hint">标准96孔</div>
+                        </div>
+                        <div class="input-group">
+                            <label>标准曲线占用孔</label>
+                            <input type="number" id="rdStandardWells" value="8" onchange="calculate()">
+                            <div class="hint">通常8孔</div>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>重复次数</label>
+                            <select id="rdReplicates" onchange="calculate()">
+                                <option value="2">2次重复</option>
+                                <option value="3" selected>3次重复</option>
+                                <option value="4">4次重复</option>
+                            </select>
+                            <div class="hint">影响每板样本数</div>
+                        </div>
+                        <div class="input-group">
+                            <label>检测时间 (小时/批次)</label>
+                            <input type="number" id="rdTimePerBatch" value="4" step="0.5" onchange="calculate()">
+                            <div class="hint">4-6小时</div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>耗材成本/板 (HKD)</label>
+                        <input type="number" id="rdConsumablePerPlate" value="35" onchange="calculate()">
+                        <div class="hint">酶标板、洗液等</div>
+                    </div>
+                </div>
+
+                <!-- Ella 参数 -->
+                <div class="method-card">
+                    <h3>🤖 Ella IL-22 Cartridge <span class="method-badge">自动化</span></h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Cartridge价格 (HKD)</label>
+                            <input type="number" id="ellaCartridgePrice" value="10680" onchange="calculate()">
+                            <div class="hint">单卡价格</div>
+                        </div>
+                        <div class="input-group">
+                            <label>每卡样本数</label>
+                            <input type="number" id="ellaSamplesPerCartridge" value="72" onchange="calculate()">
+                            <div class="hint">已含3次重复</div>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>内置重复次数</label>
+                            <input type="number" id="ellaReplicates" value="3" readonly>
+                            <div class="hint">固定3次</div>
+                        </div>
+                        <div class="input-group">
+                            <label>检测时间 (小时/卡)</label>
+                            <input type="number" id="ellaTimePerCartridge" value="1.5" step="0.5" onchange="calculate()">
+                            <div class="hint">约90分钟</div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>耗材成本/卡 (HKD)</label>
+                        <input type="number" id="ellaConsumablePerCartridge" value="0" onchange="calculate()">
+                        <div class="hint">通常已包含</div>
+                    </div>
+                </div>
+
+                <!-- 样本量设置 -->
+                <div class="method-card">
+                    <h3>📊 检测规模 <span class="method-badge">可变参数</span></h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>总样本数量</label>
+                            <input type="number" id="totalSamples" value="200" onchange="calculate()">
+                            <div class="hint">需要检测的样本总数</div>
+                        </div>
+                        <div class="input-group">
+                            <label>检测频率</label>
+                            <select id="testFrequency" onchange="calculate()">
+                                <option value="52">每周1次 (52次/年)</option>
+                                <option value="26">每2周1次 (26次/年)</option>
+                                <option value="12" selected>每月1次 (12次/年)</option>
+                                <option value="4">每季度1次 (4次/年)</option>
+                            </select>
+                            <div class="hint">用于年度成本计算</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="calculate()">🔄 重新计算</button>
+                    <button class="btn btn-secondary" onclick="resetDefaults()">↩️ 恢复默认</button>
+                </div>
+
+                <div class="info-box">
+                    💡 <strong>提示：</strong> 所有输入框都可以手动修改，修改后自动更新结果。灰色框为自动计算值。<br>
+                    ⚠️ <strong>注意：</strong> 本计算器不包含仪器折旧成本，仅计算试剂、人工和耗材成本。
+                </div>
+            </div>
+
+            <!-- 结果区域 -->
+            <div class="result-section">
+                <h2 class="section-title">
+                    <span class="icon">📈</span>
+                    成本对比结果
+                </h2>
+
+                <!-- 核心结果 -->
+                <div class="grid-3">
+                    <div class="result-card" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                        <h3>R&D 每样本成本</h3>
+                        <div class="value" id="rdCostPerSample">0</div>
+                        <div class="unit">HKD/样本</div>
+                    </div>
+                    <div class="result-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                        <h3>Ella 每样本成本</h3>
+                        <div class="value" id="ellaCostPerSample">0</div>
+                        <div class="unit">HKD/样本</div>
+                    </div>
+                    <div class="result-card" style="background: linear-gradient(135deg, #27ae60, #229954);">
+                        <h3>成本节省</h3>
+                        <div class="value" id="savingsPercent">0</div>
+                        <div class="unit">R&D 节省比例</div>
+                    </div>
+                </div>
+
+                <!-- 标签页 -->
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('detail')">📋 详细对比</div>
+                    <div class="tab" onclick="switchTab('breakdown')">💵 成本分解</div>
+                    <div class="tab" onclick="switchTab('annual')">📅 年度成本</div>
+                    <div class="tab" onclick="switchTab('chart')">📊 可视化</div>
+                </div>
+
+                <!-- 详细对比 -->
+                <div class="tab-content active" id="tab-detail">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>对比项目</th>
+                                <th>R&D DuoSet ELISA</th>
+                                <th>Ella Cartridge</th>
+                                <th>优势方</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 成本分解 -->
+                <div class="tab-content" id="tab-breakdown">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>成本项目</th>
+                                <th>R&D (HKD/样本)</th>
+                                <th>Ella (HKD/样本)</th>
+                                <th>差异</th>
+                            </tr>
+                        </thead>
+                        <tbody id="breakdownTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 年度成本 -->
+                <div class="tab-content" id="tab-annual">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>检测频率</th>
+                                <th>年样本量</th>
+                                <th>R&D年成本</th>
+                                <th>Ella年成本</th>
+                                <th>节省金额</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annualTableBody">
+                            <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 可视化图表 -->
+                <div class="tab-content" id="tab-chart">
+                    <div class="bar-chart">
+                        <h4 style="margin-bottom: 20px; color: #2c3e50;">每样本总成本对比</h4>
+                        
+                        <div class="bar-item">
+                            <div class="bar-label">
+                                <span>R&D DuoSet ELISA</span>
+                                <span id="barRdValue">0 HKD</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-rd" id="barRd" style="width: 0%;">0</div>
+                            </div>
+                        </div>
+
+                        <div class="bar-item">
+                            <div class="bar-label">
+                                <span>Ella Cartridge</span>
+                                <span id="barEllaValue">0 HKD</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-ella" id="barElla" style="width: 0%;">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bar-chart">
+                        <h4 style="margin-bottom: 20px; color: #2c3e50;">成本构成分解</h4>
+                        
+                        <div class="bar-item">
+                            <div class="bar-label">
+                                <span>R&D - 试剂成本</span>
+                                <span id="rdReagentValue">0 HKD</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-rd" id="rdReagentBar" style="width: 0%;">0</div>
+                            </div>
+                        </div>
+
+                        <div class="bar-item">
+                            <div class="bar-label">
+                                <span>R&D - 人工成本</span>
+                                <span id="rdLaborValue">0 HKD</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-rd" id="rdLaborBar" style="width: 0%; background: linear-gradient(90deg, #f39c12, #e67e22);">0</div>
+                            </div>
+                        </div>
+
+                        <div class="bar-item">
+                            <div class="bar-label">
+                                <span>Ella - 试剂成本</span>
+                                <span id="ellaReagentValue">0 HKD</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-ella" id="ellaReagentBar" style="width: 0%;">0</div>
+                            </div>
+                        </div>
+
+                        <div class="bar-item">
+                            <div class="bar-label">
+                                <span>Ella - 人工成本</span>
+                                <span id="ellaLaborValue">0 HKD</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-ella" id="ellaLaborBar" style="width: 0%; background: linear-gradient(90deg, #f39c12, #e67e22);">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 总成本对比 -->
+                <div class="method-card" style="margin-top: 20px;">
+                    <h3>📦 当前样本量总成本 (<span id="currentSampleCount">200</span> 样本)</h3>
+                    <div class="grid-3" style="margin-top: 15px;">
+                        <div style="text-align: center; padding: 15px; background: #e8f4fd; border-radius: 8px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">R&D 总成本</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #3498db;" id="rdTotalCost">0 HKD</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #fde8e8; border-radius: 8px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Ella 总成本</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #e74c3c;" id="ellaTotalCost">0 HKD</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #e8fde8; border-radius: 8px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">节省金额</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #27ae60;" id="totalSavings">0 HKD</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 建议 -->
+                <div class="warning-box">
+                    <strong>💡 智能建议：</strong> <span id="recommendation">计算后将显示推荐方案</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()" title="打印报告">🖨️</button>
+
+    <script>
+        // 默认值存储
+        const defaults = {
+            monthlySalary: 22000,
+            workDaysPerMonth: 22,
+            hoursPerDay: 8,
+            rdKitPrice: 5400,
+            rdKitPlates: 5,
+            rdWellsPerPlate: 96,
+            rdStandardWells: 8,
+            rdReplicates: 3,
+            rdTimePerBatch: 4,
+            rdConsumablePerPlate: 35,
+            ellaCartridgePrice: 10680,
+            ellaSamplesPerCartridge: 72,
+            ellaReplicates: 3,
+            ellaTimePerCartridge: 1.5,
+            ellaConsumablePerCartridge: 0,
+            totalSamples: 200,
+            testFrequency: 12
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            calculate();
+        });
+
+        // 计算主函数
+        function calculate() {
+            // 获取输入值
+            const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
+            const workDaysPerMonth = parseFloat(document.getElementById('workDaysPerMonth').value) || 0;
+            const hoursPerDay = parseFloat(document.getElementById('hoursPerDay').value) || 0;
+            
+            // 计算时薪
+            const hourlyRate = monthlySalary / workDaysPerMonth / hoursPerDay;
+            document.getElementById('hourlyRate').value = hourlyRate.toFixed(2);
+
+            // R&D 参数
+            const rdKitPrice = parseFloat(document.getElementById('rdKitPrice').value) || 0;
+            const rdKitPlates = parseFloat(document.getElementById('rdKitPlates').value) || 0;
+            const rdWellsPerPlate = parseFloat(document.getElementById('rdWellsPerPlate').value) || 0;
+            const rdStandardWells = parseFloat(document.getElementById('rdStandardWells').value) || 0;
+            const rdReplicates = parseFloat(document.getElementById('rdReplicates').value) || 2;
+            const rdTimePerBatch = parseFloat(document.getElementById('rdTimePerBatch').value) || 4;
+            const rdConsumablePerPlate = parseFloat(document.getElementById('rdConsumablePerPlate').value) || 0;
+
+            // Ella 参数
+            const ellaCartridgePrice = parseFloat(document.getElementById('ellaCartridgePrice').value) || 0;
+            const ellaSamplesPerCartridge = parseFloat(document.getElementById('ellaSamplesPerCartridge').value) || 0;
+            const ellaTimePerCartridge = parseFloat(document.getElementById('ellaTimePerCartridge').value) || 1.5;
+            const ellaConsumablePerCartridge = parseFloat(document.getElementById('ellaConsumablePerCartridge').value) || 0;
+
+            // 样本量参数
+            const totalSamples = parseFloat(document.getElementById('totalSamples').value) || 0;
+            const testFrequency = parseFloat(document.getElementById('testFrequency').value) || 12;
+
+            // R&D 计算
+            const rdEffectiveWells = rdWellsPerPlate - rdStandardWells;
+            const rdSamplesPerPlate = Math.floor(rdEffectiveWells / rdReplicates);
+            const rdTotalPlates = Math.ceil(totalSamples / rdSamplesPerPlate);
+            const rdBatches = rdTotalPlates;
+            
+            // R&D 成本分解（不含折旧）
+            const rdReagentCostPerSample = (rdKitPrice / rdKitPlates) / rdSamplesPerPlate;
+            const rdLaborCostPerSample = (rdTimePerBatch * hourlyRate) / rdSamplesPerPlate;
+            const rdConsumablePerSample = rdConsumablePerPlate / rdSamplesPerPlate;
+            const rdTotalPerSample = rdReagentCostPerSample + rdLaborCostPerSample + rdConsumablePerSample;
+
+            // Ella 计算
+            const ellaTotalCartridges = Math.ceil(totalSamples / ellaSamplesPerCartridge);
+            const ellaBatches = ellaTotalCartridges;
+            
+            // Ella 成本分解（不含折旧）
+            const ellaReagentCostPerSample = ellaCartridgePrice / ellaSamplesPerCartridge;
+            const ellaLaborCostPerSample = (ellaTimePerCartridge * hourlyRate) / ellaSamplesPerCartridge;
+            const ellaConsumablePerSample = ellaConsumablePerCartridge / ellaSamplesPerCartridge;
+            const ellaTotalPerSample = ellaReagentCostPerSample + ellaLaborCostPerSample + ellaConsumablePerSample;
+
+            // 总成本
+            const rdTotalCost = rdTotalPerSample * totalSamples;
+            const ellaTotalCost = ellaTotalPerSample * totalSamples;
+            const savings = ellaTotalCost - rdTotalCost;
+            const savingsPercent = ellaTotalPerSample > 0 ? ((ellaTotalPerSample - rdTotalPerSample) / ellaTotalPerSample * 100).toFixed(1) : 0;
+
+            // 更新显示
+            document.getElementById('rdCostPerSample').textContent = rdTotalPerSample.toFixed(2);
+            document.getElementById('ellaCostPerSample').textContent = ellaTotalPerSample.toFixed(2);
+            document.getElementById('savingsPercent').textContent = savingsPercent + '%';
+            document.getElementById('currentSampleCount').textContent = totalSamples;
+            document.getElementById('rdTotalCost').textContent = formatCurrency(rdTotalCost);
+            document.getElementById('ellaTotalCost').textContent = formatCurrency(ellaTotalCost);
+            document.getElementById('totalSavings').textContent = formatCurrency(savings);
+
+            // 更新详细对比表
+            updateDetailTable(rdSamplesPerPlate, ellaSamplesPerCartridge, rdReplicates, rdTimePerBatch, ellaTimePerCartridge, rdTotalPerSample, ellaTotalPerSample);
+
+            // 更新成本分解表
+            updateBreakdownTable(rdReagentCostPerSample, rdLaborCostPerSample, rdConsumablePerSample,
+                                ellaReagentCostPerSample, ellaLaborCostPerSample, ellaConsumablePerSample);
+
+            // 更新年度成本表
+            updateAnnualTable(rdTotalPerSample, ellaTotalPerSample, testFrequency, totalSamples);
+
+            // 更新图表
+            updateCharts(rdTotalPerSample, ellaTotalPerSample, rdReagentCostPerSample, rdLaborCostPerSample, 
+                        ellaReagentCostPerSample, ellaLaborCostPerSample);
+
+            // 更新建议
+            updateRecommendation(rdTotalPerSample, ellaTotalPerSample, totalSamples, rdReplicates);
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('en-HK', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' HKD';
+        }
+
+        function updateDetailTable(rdSamplesPerPlate, ellaSamplesPerCartridge, rdReplicates, rdTime, ellaTime, rdCost, ellaCost) {
+            const tbody = document.getElementById('detailTableBody');
+            const rdBetter = rdCost < ellaCost;
+            
+            tbody.innerHTML = `
+                <tr>
+                    <td>每板/卡有效样本数</td>
+                    <td>${rdSamplesPerPlate} 样本/板</td>
+                    <td>${ellaSamplesPerCartridge} 样本/卡</td>
+                    <td>${rdSamplesPerPlate > ellaSamplesPerCartridge ? '<span class="best-value">✓ R&D</span>' : '<span class="best-value">✓ Ella</span>'}</td>
+                </tr>
+                <tr>
+                    <td>重复次数</td>
+                    <td>${rdReplicates} 次</td>
+                    <td>3 次 (内置)</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>检测时间/批次</td>
+                    <td>${rdTime} 小时</td>
+                    <td>${ellaTime} 小时</td>
+                    <td>${rdTime > ellaTime ? '<span class="best-value">✓ Ella</span>' : '<span class="best-value">✓ R&D</span>'}</td>
+                </tr>
+                <tr class="highlight">
+                    <td><strong>每样本总成本</strong></td>
+                    <td class="${rdBetter ? 'highlight' : ''}"><strong>${rdCost.toFixed(2)} HKD</strong></td>
+                    <td class="${!rdBetter ? 'highlight' : ''}"><strong>${ellaCost.toFixed(2)} HKD</strong></td>
+                    <td>${rdBetter ? '<span class="best-value">✓ R&D</span>' : '<span class="best-value">✓ Ella</span>'}</td>
+                </tr>
+                <tr>
+                    <td>灵敏度</td>
+                    <td>15.6 pg/mL</td>
+                    <td>0.5-2 pg/mL</td>
+                    <td><span class="best-value">✓ Ella</span></td>
+                </tr>
+                <tr>
+                    <td>重复性 (CV)</td>
+                    <td>10-15%</td>
+                    <td>&lt;5%</td>
+                    <td><span class="best-value">✓ Ella</span></td>
+                </tr>
+                <tr>
+                    <td>样本用量</td>
+                    <td>100 µL</td>
+                    <td>25 µL</td>
+                    <td><span class="best-value">✓ Ella</span></td>
+                </tr>
+            `;
+        }
+
+        function updateBreakdownTable(rdReagent, rdLabor, rdConsumable, ellaReagent, ellaLabor, ellaConsumable) {
+            const tbody = document.getElementById('breakdownTableBody');
+            const rdTotal = rdReagent + rdLabor + rdConsumable;
+            const ellaTotal = ellaReagent + ellaLabor + ellaConsumable;
+            
+            tbody.innerHTML = `
+                <tr class="highlight">
+                    <td><strong>试剂成本</strong></td>
+                    <td>${rdReagent.toFixed(2)}</td>
+                    <td>${ellaReagent.toFixed(2)}</td>
+                    <td class="${rdReagent < ellaReagent ? 'best-value' : ''}">${rdReagent < ellaReagent ? '✓ R&D 省' + formatCurrency(ellaReagent - rdReagent) : '✓ Ella 省' + formatCurrency(rdReagent - ellaReagent)}</td>
+                </tr>
+                <tr>
+                    <td>人工成本</td>
+                    <td>${rdLabor.toFixed(2)}</td>
+                    <td>${ellaLabor.toFixed(2)}</td>
+                    <td class="${rdLabor > ellaLabor ? 'best-value' : ''}">${rdLabor > ellaLabor ? '✓ Ella 省' + formatCurrency(rdLabor - ellaLabor) : '✓ R&D 省' + formatCurrency(ellaLabor - rdLabor)}</td>
+                </tr>
+                <tr>
+                    <td>耗材成本</td>
+                    <td>${rdConsumable.toFixed(2)}</td>
+                    <td>${ellaConsumable.toFixed(2)}</td>
+                    <td class="${rdConsumable > ellaConsumable ? 'best-value' : ''}">${rdConsumable > ellaConsumable ? '✓ Ella' : '✓ R&D'}</td>
+                </tr>
+                <tr style="background: #f0f0f0; font-weight: 700;">
+                    <td>总计</td>
+                    <td>${rdTotal.toFixed(2)}</td>
+                    <td>${ellaTotal.toFixed(2)}</td>
+                    <td class="best-value">R&D 省 ${formatCurrency(ellaTotal - rdTotal)}</td>
+                </tr>
+            `;
+        }
+
+        function updateAnnualTable(rdPerSample, ellaPerSample, frequency, baseSamples) {
+            const tbody = document.getElementById('annualTableBody');
+            const frequencies = [
+                { label: '每周1次', value: 52 },
+                { label: '每2周1次', value: 26 },
+                { label: '每月1次', value: 12 },
+                { label: '每季度1次', value: 4 }
+            ];
+            
+            tbody.innerHTML = frequencies.map(f => {
+                const annualSamples = baseSamples * (f.value / frequency);
+                const rdAnnual = rdPerSample * annualSamples;
+                const ellaAnnual = ellaPerSample * annualSamples;
+                const savings = ellaAnnual - rdAnnual;
+                const savingsPercent = ellaPerSample > 0 ? ((ellaPerSample - rdPerSample) / ellaPerSample * 100).toFixed(1) : 0;
+                
+                return `
+                    <tr>
+                        <td>${f.label}</td>
+                        <td>${Math.round(annualSamples)}</td>
+                        <td>${formatCurrency(rdAnnual)}</td>
+                        <td>${formatCurrency(ellaAnnual)}</td>
+                        <td class="best-value">${formatCurrency(savings)} (${savingsPercent}%)</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateCharts(rdTotal, ellaTotal, rdReagent, rdLabor, ellaReagent, ellaLabor) {
+            const maxCost = Math.max(rdTotal, ellaTotal);
+            
+            // 总成本条形图
+            const rdPercent = maxCost > 0 ? (rdTotal / maxCost * 100).toFixed(1) : 0;
+            const ellaPercent = maxCost > 0 ? (ellaTotal / maxCost * 100).toFixed(1) : 0;
+            
+            document.getElementById('barRd').style.width = rdPercent + '%';
+            document.getElementById('barRd').textContent = rdTotal.toFixed(2) + ' HKD';
+            document.getElementById('barRdValue').textContent = rdTotal.toFixed(2) + ' HKD';
+            
+            document.getElementById('barElla').style.width = ellaPercent + '%';
+            document.getElementById('barElla').textContent = ellaTotal.toFixed(2) + ' HKD';
+            document.getElementById('barEllaValue').textContent = ellaTotal.toFixed(2) + ' HKD';
+
+            // 成本分解条形图
+            const maxReagent = Math.max(rdReagent, ellaReagent);
+            const rdReagentPercent = maxReagent > 0 ? (rdReagent / maxReagent * 100).toFixed(1) : 0;
+            const ellaReagentPercent = maxReagent > 0 ? (ellaReagent / maxReagent * 100).toFixed(1) : 0;
+            
+            document.getElementById('rdReagentBar').style.width = rdReagentPercent + '%';
+            document.getElementById('rdReagentBar').textContent = rdReagent.toFixed(2);
+            document.getElementById('rdReagentValue').textContent = rdReagent.toFixed(2) + ' HKD';
+            
+            document.getElementById('ellaReagentBar').style.width = ellaReagentPercent + '%';
+            document.getElementById('ellaReagentBar').textContent = ellaReagent.toFixed(2);
+            document.getElementById('ellaReagentValue').textContent = ellaReagent.toFixed(2) + ' HKD';
+
+            const maxLabor = Math.max(rdLabor, ellaLabor);
+            const rdLaborPercent = maxLabor > 0 ? (rdLabor / maxLabor * 100).toFixed(1) : 0;
+            const ellaLaborPercent = maxLabor > 0 ? (ellaLabor / maxLabor * 100).toFixed(1) : 0;
+            
+            document.getElementById('rdLaborBar').style.width = rdLaborPercent + '%';
+            document.getElementById('rdLaborBar').textContent = rdLabor.toFixed(2);
+            document.getElementById('rdLaborValue').textContent = rdLabor.toFixed(2) + ' HKD';
+            
+            document.getElementById('ellaLaborBar').style.width = ellaLaborPercent + '%';
+            document.getElementById('ellaLaborBar').textContent = ellaLabor.toFixed(2);
+            document.getElementById('ellaLaborValue').textContent = ellaLabor.toFixed(2) + ' HKD';
+        }
+
+        function updateRecommendation(rdCost, ellaCost, samples, replicates) {
+            const rec = document.getElementById('recommendation');
+            const savings = ellaCost > 0 ? ((ellaCost - rdCost) / ellaCost * 100).toFixed(1) : 0;
+            
+            if (rdCost < ellaCost) {
+                if (samples > 100) {
+                    rec.innerHTML = `基于当前参数，<strong>R&D DuoSet ELISA (${replicates}次重复)</strong> 更具成本效益，每样本可节省 <span class="savings-badge">${savings}%</span>。适合大样本量常规检测。`;
+                } else {
+                    rec.innerHTML = `基于当前参数，<strong>R&D DuoSet ELISA</strong> 成本更低，但如果您需要更高灵敏度或样本极其珍贵，可考虑 Ella。`;
+                }
+            } else {
+                rec.innerHTML = `基于当前参数，<strong>Ella Cartridge</strong> 更具成本效益。这通常发生在人工成本极高或样本量很小的情况下。`;
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function resetDefaults() {
+            Object.keys(defaults).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.value = defaults[key];
+                }
+            });
+            calculate();
+        }
+
+        // 实时计算（输入时自动更新）
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', function() {
+                if (this.id !== 'hourlyRate' && this.id !== 'ellaReplicates') {
+                    calculate();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
